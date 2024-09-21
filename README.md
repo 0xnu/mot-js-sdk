@@ -132,7 +132,6 @@ You can read the [API documentation](https://documentation.history.mot.api.gov.u
 
 This project is licensed under the [MIT License](./LICENSE).
 
-
 ### Copyright
 
 (c) 2024 [Finbarrs Oketunji](https://finbarrs.eu).
