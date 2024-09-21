@@ -33,6 +33,12 @@ export MOT_API_KEY=enter_real_api_key
 npm run test
 ```
 
+Unset the environment variables after completing the tests:
+
+```sh
+unset MOT_CLIENT_ID && unset MOT_CLIENT_SECRET && unset MOT_API_KEY
+```
+
 ### Installation
 
 To install the package, run the following command:
