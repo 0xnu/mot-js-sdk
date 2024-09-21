@@ -1,11 +1,8 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/0xnu/mot-js-sdk)
-![Snyk Vulnerabilities for npm scoped package](https://img.shields.io/snyk/vulnerabilities/npm/mot-js-sdk)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/0xnu/mot-js-sdk) <br>
+![GitHub package.json version](https://img.shields.io/github/package-json/v/0xnu/mot-js-sdk)
 ![GitHub last commit](https://img.shields.io/github/last-commit/0xnu/mot-js-sdk)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/mot-js-sdk)
-![npm](https://img.shields.io/npm/dw/mot-js-sdk) <br>
+![npm](https://img.shields.io/npm/dw/mot-js-sdk)
 ![GitHub issues](https://img.shields.io/github/issues-raw/0xnu/mot-js-sdk)
-![License](https://img.shields.io/github/license/0xnu/mot-js-sdk)
 
 ## MOT History API JS SDK
 
