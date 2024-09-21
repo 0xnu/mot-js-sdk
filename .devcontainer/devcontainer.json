@@ -1,0 +1,22 @@
+{
+  "name": "TypeScript and JavaScript Development",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-20",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "ms-vscode.js-debug",
+        "VisualStudioExptTeam.vscodeintellicode"
+      ]
+    }
+  },
+  "forwardPorts": [3000],
+  "postCreateCommand": "npm install",
+  "remoteUser": "node",
+  "containerEnv": {
+    "NODE_VERSION": "20"
+  }
+}
