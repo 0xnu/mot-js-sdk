@@ -17,6 +17,14 @@ class MotApiSdk extends EventEmitter {
   private token: string | null = null;
   private tokenExpiry: number = 0;
 
+  // Rate limiting properties
+  private dailyQuota: number = 500000;
+  private dailyQuotaReset: number = 0;
+  private burstLimit: number = 10;
+  private burstTokens: number = 10;
+  private rpsLimit: number = 15;
+  private requestTimestamps: number[] = [];
+
   private static readonly BASE_URL =
     "https://history.mot.api.gov.uk/v1/trade/vehicles";
   private static readonly TOKEN_URL =
@@ -31,74 +39,132 @@ class MotApiSdk extends EventEmitter {
       [404, "Not Found - The requested data is not found"],
       [
         405,
-        "Method Not Allowed - The HTTP method is not supported for this endpoint",
+        "Method Not Allowed - The HTTP method is not supported for this endpoint"
       ],
       [406, "Not Acceptable - The requested media type is not supported"],
       [
         409,
-        "Conflict - The request could not be completed due to a conflict with the current state of the target resource",
+        "Conflict - The request could not be completed due to a conflict with the current state of the target resource"
       ],
       [
         412,
-        "Precondition Failed - Could not complete request because a constraint was not met",
+        "Precondition Failed - Could not complete request because a constraint was not met"
       ],
       [
         415,
-        "Unsupported Media Type - The media type of the request is not supported",
+        "Unsupported Media Type - The media type of the request is not supported"
       ],
       [
         422,
-        "Unprocessable Entity - The request was well-formed but contains semantic errors",
+        "Unprocessable Entity - The request was well-formed but contains semantic errors"
       ],
       [
         429,
-        "Too Many Requests - The user has sent too many requests in a given amount of time",
+        "Too Many Requests - The user has sent too many requests in a given amount of time"
       ],
       [500, "Internal Server Error - An unexpected error has occurred"],
       [
         502,
-        "Bad Gateway - The server received an invalid response from an upstream server",
+        "Bad Gateway - The server received an invalid response from an upstream server"
       ],
       [
         503,
-        "Service Unavailable - The server is currently unable to handle the request",
+        "Service Unavailable - The server is currently unable to handle the request"
       ],
       [
         504,
-        "Gateway Timeout - The upstream server failed to send a request in the time allowed by the server",
-      ],
-    ],
+        "Gateway Timeout - The upstream server failed to send a request in the time allowed by the server"
+      ]
+    ]
   );
 
   constructor(
     private readonly clientId: string,
     private readonly clientSecret: string,
-    private readonly apiKey: string,
+    private readonly apiKey: string
   ) {
     super();
     this.axiosInstance = axios.create({
       baseURL: MotApiSdk.BASE_URL,
       headers: {
-        "X-API-Key": this.apiKey,
-      },
+        "X-API-Key": this.apiKey
+      }
     });
 
     this.setupInterceptors();
+    this.resetDailyQuota();
   }
 
   private setupInterceptors(): void {
     this.axiosInstance.interceptors.request.use(
-      async (config) => {
+      async config => {
+        await this.waitForRateLimit();
         config.headers["Authorization"] = `Bearer ${await this.getToken()}`;
         return config;
       },
-      (error) => Promise.reject(error),
+      error => Promise.reject(error)
     );
 
     this.axiosInstance.interceptors.response.use(
-      (response) => response,
-      (error) => this.handleApiError(error),
+      response => response,
+      error => this.handleApiError(error)
     );
+  }
+
+  private async waitForRateLimit(): Promise<void> {
+    while (!this.checkRateLimits()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    this.updateRateLimits();
+  }
+
+  private checkRateLimits(): boolean {
+    const now = Date.now();
+
+    // Check daily quota
+    if (this.dailyQuota <= 0 && now < this.dailyQuotaReset) {
+      return false;
+    }
+
+    // Check burst limit
+    if (this.burstTokens <= 0) {
+      return false;
+    }
+
+    // Check RPS limit
+    const oneSecondAgo = now - 1000;
+    const requestsLastSecond = this.requestTimestamps.filter(
+      t => t > oneSecondAgo
+    ).length;
+    if (requestsLastSecond >= this.rpsLimit) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private updateRateLimits(): void {
+    const now = Date.now();
+
+    // Update daily quota
+    if (now >= this.dailyQuotaReset) {
+      this.resetDailyQuota();
+    }
+    this.dailyQuota--;
+
+    // Update burst tokens
+    this.burstTokens = Math.min(this.burstTokens + 1, this.burstLimit);
+    this.burstTokens--;
+
+    // Update RPS tracking
+    this.requestTimestamps.push(now);
+    this.requestTimestamps = this.requestTimestamps.filter(t => t > now - 1000);
+  }
+
+  private resetDailyQuota(): void {
+    const now = Date.now();
+    this.dailyQuota = 500000;
+    this.dailyQuotaReset = now + 24 * 60 * 60 * 1000; // Reset after 24 hours
   }
 
   private async getToken(): Promise<string> {
@@ -111,7 +177,7 @@ class MotApiSdk extends EventEmitter {
         grant_type: "client_credentials",
         client_id: this.clientId,
         client_secret: this.clientSecret,
-        scope: MotApiSdk.SCOPE_URL,
+        scope: MotApiSdk.SCOPE_URL
       });
 
       const tokenResponse = await axios.post<TokenResponse>(
@@ -119,9 +185,9 @@ class MotApiSdk extends EventEmitter {
         params,
         {
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        },
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        }
       );
 
       this.token = tokenResponse.data.access_token;
@@ -151,7 +217,7 @@ class MotApiSdk extends EventEmitter {
   private async makeRequest<T>(
     endpoint: string,
     method: "GET" | "PUT" = "GET",
-    data?: any,
+    data?: any
   ): Promise<T> {
     try {
       const response: AxiosResponse<T> = await this.axiosInstance.request({
@@ -161,7 +227,7 @@ class MotApiSdk extends EventEmitter {
         headers:
           method === "PUT"
             ? { "Content-Type": "application/x-www-form-urlencoded" }
-            : {},
+            : {}
       });
       this.emit("requestSuccess", { endpoint, method });
       return response.data;

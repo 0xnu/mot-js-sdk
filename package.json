@@ -1,6 +1,6 @@
 {
   "name": "mot-js-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A TypeScript SDK for the MOT History API.",
   "main": "dist/mot-js-sdk.js",
   "types": "dist/mot-js-sdk.d.ts",
