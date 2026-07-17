@@ -2,12 +2,12 @@ import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import qs from "qs";
 import { EventEmitter } from "events";
 
-interface TokenResponse {
+export interface TokenResponse {
   access_token: string;
   expires_in: number;
 }
 
-interface CredentialsRequest {
+export interface CredentialsRequest {
   awsApiKeyValue: string;
   email: string;
 }
@@ -254,4 +254,5 @@ class MotApiSdk extends EventEmitter {
   }
 }
 
+export { MotApiSdk };
 export default MotApiSdk;

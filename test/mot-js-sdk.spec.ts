@@ -1,5 +1,5 @@
 import nock from "nock";
-import MotApiSdk from "../src/mot-js-sdk";
+import { MotApiSdk, CredentialsRequest } from "../src/mot-js-sdk";
 
 describe("MotApiSdk", () => {
   const clientId = process.env.MOT_CLIENT_ID || "dummy-client-id";
@@ -162,7 +162,7 @@ describe("MotApiSdk", () => {
       const result = await sdk.renewCredentials({
         awsApiKeyValue: "old-key",
         email: "test@example.com",
-      });
+      } satisfies CredentialsRequest);
       expect(result).toEqual({ clientSecret: "new-client-secret" });
     });
 
@@ -180,7 +180,7 @@ describe("MotApiSdk", () => {
         sdk.renewCredentials({
           awsApiKeyValue: "invalid-key",
           email: "test@example.com",
-        }),
+        } satisfies CredentialsRequest),
       ).rejects.toThrow(
         "412: Precondition Failed - Could not complete request because a constraint was not met",
       );

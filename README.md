@@ -57,6 +57,8 @@ npm install mot-js-sdk
 
 Here is an example of how you can use the SDK to build real-world applications:
 
+#### Default import
+
 ```javascript
 import MotApiSdk from 'mot-js-sdk';
 
@@ -101,6 +103,28 @@ async function integrateMotApiSdk() {
 integrateMotApiSdk();
 ```
 
+#### Named import (with types)
+
+```typescript
+import { MotApiSdk, TokenResponse, CredentialsRequest } from 'mot-js-sdk';
+
+const sdk = new MotApiSdk(
+  process.env.MOT_CLIENT_ID!,
+  process.env.MOT_CLIENT_SECRET!,
+  process.env.MOT_API_KEY!
+);
+
+async function getVehicle(): Promise<void> {
+  const vehicle = await sdk.getVehicleByRegistration('AB12CDE');
+  console.log(vehicle);
+}
+
+async function renew(creds: CredentialsRequest): Promise<void> {
+  const result = await sdk.renewCredentials(creds);
+  console.log(result);
+}
+```
+
 Set up your environment variables:
 
 ```sh
@@ -109,10 +133,10 @@ export MOT_CLIENT_SECRET=enter_real_client_secret
 export MOT_API_KEY=enter_real_api_key
 ```
 
-Execute the script with `ts-node`:
+Execute the script:
 
 ```sh
-ts-node mot-js-sdk-integration.ts
+npx tsx mot-js-sdk-integration.ts
 ```
 
 ### Setting up a MOT History API
@@ -131,7 +155,7 @@ This project is licensed under the [MIT License](./LICENSE).
 
 ### Copyright
 
-(c) 2024 - 2025 [Finbarrs Oketunji](https://finbarrs.eu).
+(c) 2024 - 2026 [Finbarrs Oketunji](https://finbarrs.eu).
 
 The MOT History API JavaScript/TypeScript SDK is Licensed under the [Open Government Licence v3.0](
 https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
